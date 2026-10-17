@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Aventura STEM: Energía Solar en Realidad Aumentada</title>
+
+  <!-- Carga de A-Frame y MindAR -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* Interfaz de usuario para niños */
+    #ui-overlay {
+      position: absolute;
+      bottom: 25px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      width: 90%;
+      max-width: 400px;
+      pointer-events: none; /* Permite interactuar con el lienzo 3D si es necesario */
+    }
+
+    .interactive-btn {
+      pointer-events: auto;
+      padding: 14px 28px;
+      background: linear-gradient(135deg, #ff9800, #f57c00);
+      color: #ffffff;
+      font-size: 18px;
+      font-weight: bold;
+      border: 3px solid #ffffff;
+      border-radius: 30px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+      cursor: pointer;
+      display: none; /* Se activa mediante JavaScript al detectar el objetivo */
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .interactive-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Mensaje de guía para los estudiantes */
+    #scan-prompt {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      background: rgba(0, 0, 0, 0.65);
+      color: #ffffff;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 16px;
+      text-align: center;
+      backdrop-filter: blur(4px);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Mensaje de escaneo en pantalla -->
+  <div id="scan-prompt">📷 Apunta la cámara al dibujo del panel solar</div>
+
+  <!-- Botón de interacción -->
+  <div id="ui-overlay">
+    <button id="info-btn" class="interactive-btn">
+      ☀️ ¡Toca para ver cómo funciona!
+    </button>
+  </div>
+
+  <!-- Escena de A-Frame con MindAR -->
+  <a-scene 
+    mindar-image="imageTargetSrc: ./solar-target.mind; autoStart: true; uiLoading: no; uiError: no;" 
+    color-space="sRGB" 
+    renderer="colorManagement: true, physicallyCorrectLights: true" 
+    vr-mode-ui="enabled: false" 
+    device-orientation-permission-ui="enabled: false">
+    
+    <a-assets>
+      <!-- Carga del modelo 3D local -->
+      <a-asset-item id="solarModel" src="./solar_panel.glb"></a-asset-item>
+    </a-assets>
+
+    <!-- Cámara AR -->
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <!-- Objetivo detectado (Index 0) -->
+    <a-entity id="solarTarget" mindar-image-target="targetIndex: 0">
+      
+      <!-- Modelo 3D con animación de rotación continua -->
+      <a-gltf-model 
+        src="#solarModel" 
+        position="0 0 0" 
+        scale="0.4 0.4 0.4" 
+        rotation="0 0 0"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 12000; easing: linear">
+      </a-gltf-model>
+
+    </a-entity>
+  </a-scene>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const target = document.querySelector("#solarTarget");
+      const infoBtn = document.querySelector("#info-btn");
+      const scanPrompt = document.querySelector("#scan-prompt");
+
+      // Evento: El marcador entra en la vista de la cámara
+      target.addEventListener("targetFound", () => {
+        infoBtn.style.display = "block";
+        scanPrompt.style.display = "none";
+      });
+
+      // Evento: El marcador sale de la vista de la cámara
+      target.addEventListener("targetLost", () => {
+        infoBtn.style.display = "none";
+        scanPrompt.style.display = "block";
+      });
+
+      // Interacción al presionar el botón
+      infoBtn.addEventListener("click", () => {
+        alert("¡Grandioso! Los paneles solares transforman la luz del Sol directamente en energía eléctrica para iluminar nuestras casas.");
+      });
+    });
+  </script>
+
+</body>
+</html>
